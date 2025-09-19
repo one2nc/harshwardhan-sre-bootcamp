@@ -22,9 +22,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
-
-
-
 # Define the Student model
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,8 +34,6 @@ class Student(db.Model):
 
     def __repr__(self):
         return f"Student('{self.id}', '{self.first_name}', '{self.last_name}', '{self.age}', '{self.email}')"
-
-
 
 # Route to get all students
 @app.route('/students', methods=['GET'])
@@ -90,7 +85,10 @@ def create_student():
         existing_student = Student.query.filter_by(email=data['email']).first()
         if existing_student:
             return jsonify({'error': 'A student with this email already exists'}), 409  # HTTP 409 Conflict
-
+        if new_student.age > 100 or new_student.age <=0:
+            return jsonify({'error': 'Invalid Age'}), 400
+        
+            
         db.session.add(new_student)
         db.session.commit()
         return jsonify({
@@ -126,8 +124,6 @@ def update_student(id):
         if existing_student:
             return jsonify({'error': 'A student with this email already exists'}), 409  # HTTP 409 Conflict
         student.email = data['email']
-        
-
 
     try:
         db.session.commit()
@@ -156,6 +152,10 @@ def delete_student(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/healthcheck', methods=['GET'])
+def healthcheck():
+    return jsonify({'Status': 'OK'}), 200
 
 # Initialize the database (run this once to create the database)
 with app.app_context():

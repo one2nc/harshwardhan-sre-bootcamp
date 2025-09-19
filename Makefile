@@ -13,17 +13,23 @@ PIP := $(VENV)/bin/pip
 serve-dev: $(VENV)/bin/activate
 	$(VENV)/bin/flask db migrate
 	$(VENV)/bin/flask db upgrade
-	venv/bin/python3 app.py
+	$(PYTHON) app.py
 
 serve-prod: $(VENV)/bin/activate
 	 $(VENV)/bin/flask db migrate
 	 $(VENV)/bin/flask db upgrade
-	 venv/bin/gunicorn -c gunicorn-config.py app:app
+	 $(VENV)/bin/gunicorn -c gunicorn-config.py app:app
+
+migrate: $(VENV)/bin/activate
+	 $(VENV)/bin/flask db migrate
+	 $(VENV)/bin/flask db upgrade
+
+test: $(VENV)/bin/activate
+	 $(VENV)/bin/pytest tests/ -v
 
 venv/bin/activate: requirements.txt
 				   python3 -m venv venv
-				   venv/bin/pip install -r requirements.txt
-
+				   $(PIP) install -r requirements.txt
 clean:
 	rm -rf __pycache__
 	rm -rf venv
