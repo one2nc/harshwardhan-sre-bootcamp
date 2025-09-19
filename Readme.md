@@ -73,6 +73,13 @@ This will:
 - Run database migrations
 - Start the application using Gunicorn
 
+## Docker
+If you have Docker.You can use the below commands:
+``` bash
+make build
+make serve-docker
+```
+
 ## Database Schema
 
 ### Student Model
