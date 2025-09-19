@@ -38,8 +38,15 @@ serve-prod: $(VENV)/bin/activate
 	 $(VENV)/bin/gunicorn -c gunicorn-config.py app:app
 
 serve-docker: 
-	docker run --rm -p 5000:5000 -v .env:/app/.env student-api:$(COMMIT_ID)
+# 	docker run --rm -p 5000:5000 -v .env:/app/.env student-api:$(COMMIT_ID)
+# 	docker compose up db
+	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db migrate
+	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db upgrade
+	docker compose up -d
 
+stop-docker:
+	docker compose down
+	
 venv/bin/activate: requirements.txt
 				   python3 -m venv venv
 				   $(PIP) install -r requirements.txt
