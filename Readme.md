@@ -25,6 +25,8 @@ A simple RESTful API built with Flask for managing student records. This applica
 
 - Python 3.7 or higher
 - Make (optional, for using Makefile commands)
+- Docker (optional)
+- Docker-compose (optional)
 
 ### Setup
 
