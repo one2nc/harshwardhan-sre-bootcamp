@@ -43,7 +43,6 @@ serve-docker:
 venv/bin/activate: requirements.txt
 				   python3 -m venv venv
 				   $(PIP) install -r requirements.txt
-				   docker build . -t student-api:$(COMMIT_ID)
 
 clean:
 	rm -rf __pycache__
