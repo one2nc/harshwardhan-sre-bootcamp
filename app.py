@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
@@ -20,6 +20,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize the SQLAlchemy object
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+v1 = Blueprint('v1', __name__, url_prefix='/api/v1')
 
 
 # Define the Student model
@@ -36,7 +37,7 @@ class Student(db.Model):
         return f"Student('{self.id}', '{self.first_name}', '{self.last_name}', '{self.age}', '{self.email}')"
 
 # Route to get all students
-@app.route('/students', methods=['GET'])
+@v1.route('/students', methods=['GET'])
 def get_students():
     students = Student.query.all()
     result = []
@@ -51,7 +52,7 @@ def get_students():
     return jsonify(result), 200
 
 # Route to get a single student by ID
-@app.route('/students/<int:id>', methods=['GET'])
+@v1.route('/students/<int:id>', methods=['GET'])
 def get_student(id):
     student = Student.query.get(id)
     if student:
@@ -66,7 +67,7 @@ def get_student(id):
         return jsonify({'error': 'Student not found'}), 404
 
 # Route to create a new student
-@app.route('/students', methods=['POST'])
+@v1.route('/students', methods=['POST'])
 def create_student():
     data = request.get_json()
 
@@ -103,7 +104,7 @@ def create_student():
         return jsonify({'error': str(e)}), 500
 
 # Route to update a student's information
-@app.route('/students/<int:id>', methods=['PUT'])
+@v1.route('/students/<int:id>', methods=['PUT'])
 def update_student(id):
     student = Student.query.get(id)
     if not student:
@@ -139,7 +140,7 @@ def update_student(id):
         return jsonify({'error': str(e)}), 500
 
 # Route to delete a student by ID
-@app.route('/students/<int:id>', methods=['DELETE'])
+@v1.route('/students/<int:id>', methods=['DELETE'])
 def delete_student(id):
     student = Student.query.get(id)
     if not student:
@@ -160,6 +161,8 @@ def healthcheck():
 # Initialize the database (run this once to create the database)
 with app.app_context():
     db.create_all()
+
+app.register_blueprint(v1)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import tempfile
 import os
 from app import app, db, Student
 
+URL_PREFIX="/api/v1"
 
 @pytest.fixture
 def test_app():
@@ -57,7 +58,7 @@ def another_student_data():
 @pytest.fixture
 def created_student(client, sample_student_data):
     """Create a student in the database and return the response data"""
-    response = client.post('/students',
+    response = client.post(f'{URL_PREFIX}/students',
                           data=json.dumps(sample_student_data),
                           content_type='application/json')
     return json.loads(response.data)
@@ -68,7 +69,7 @@ def multiple_students(client, sample_student_data, another_student_data):
     """Create multiple students in the database"""
     students = []
     for student_data in [sample_student_data, another_student_data]:
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps(student_data),
                               content_type='application/json')
         students.append(json.loads(response.data))
@@ -91,14 +92,14 @@ class TestGetStudents:
     
     def test_get_all_students_empty(self, client):
         """Test getting all students when database is empty"""
-        response = client.get('/students')
+        response = client.get(f'{URL_PREFIX}/students')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data == []
 
     def test_get_all_students_with_data(self, client, multiple_students):
         """Test getting all students when database has data"""
-        response = client.get('/students')
+        response = client.get(f'{URL_PREFIX}/students')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
@@ -112,7 +113,7 @@ class TestGetStudents:
         """Test getting a student by ID successfully"""
         student_id = created_student['id']
         
-        response = client.get(f'/students/{student_id}')
+        response = client.get(f'/api/v1/students/{student_id}')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['id'] == student_id
@@ -123,7 +124,7 @@ class TestGetStudents:
 
     def test_get_student_by_id_not_found(self, client):
         """Test getting a student by ID when student doesn't exist"""
-        response = client.get('/students/999')
+        response = client.get('/api/v1/students/999')
         assert response.status_code == 404
         data = json.loads(response.data)
         assert data['error'] == 'Student not found'
@@ -134,7 +135,7 @@ class TestCreateStudent:
     
     def test_create_student_success(self, client, sample_student_data):
         """Test creating a new student successfully"""
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps(sample_student_data),
                               content_type='application/json')
         
@@ -154,7 +155,7 @@ class TestCreateStudent:
         incomplete_data = sample_student_data.copy()
         del incomplete_data[missing_field]
         
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps(incomplete_data),
                               content_type='application/json')
         
@@ -168,7 +169,7 @@ class TestCreateStudent:
         duplicate_email_data = another_student_data.copy()
         duplicate_email_data['email'] = created_student['email']
         
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps(duplicate_email_data),
                               content_type='application/json')
         
@@ -178,7 +179,7 @@ class TestCreateStudent:
 
     def test_create_student_invalid_json(self, client):
         """Test creating a student with invalid JSON data"""
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data='invalid json',
                               content_type='application/json')
         
@@ -186,7 +187,7 @@ class TestCreateStudent:
 
     def test_create_student_empty_data(self, client):
         """Test creating a student with empty data"""
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps({}),
                               content_type='application/json')
         
@@ -206,7 +207,7 @@ class TestUpdateStudent:
             'age': 21
         }
         
-        response = client.put(f'/students/{student_id}',
+        response = client.put(f'/api/v1/students/{student_id}',
                              data=json.dumps(update_data),
                              content_type='application/json')
         
@@ -227,7 +228,7 @@ class TestUpdateStudent:
             'email': 'jonathan.doe.smith@example.com'
         }
         
-        response = client.put(f'/students/{student_id}',
+        response = client.put(f'/api/v1/students/{student_id}',
                              data=json.dumps(update_data),
                              content_type='application/json')
         
@@ -242,7 +243,7 @@ class TestUpdateStudent:
         """Test updating a student that doesn't exist"""
         update_data = {'first_name': 'Johnny'}
         
-        response = client.put('/students/999',
+        response = client.put('/api/v1/students/999',
                              data=json.dumps(update_data),
                              content_type='application/json')
         
@@ -260,7 +261,7 @@ class TestUpdateStudent:
             'email': multiple_students[0]['email']
         }
         
-        response = client.put(f'/students/{student2_id}',
+        response = client.put(f'/api/v1/students/{student2_id}',
                              data=json.dumps(update_data),
                              content_type='application/json')
         
@@ -273,7 +274,7 @@ class TestUpdateStudent:
         student_id = created_student['id']
         
         # Update only the age
-        response = client.put(f'/students/{student_id}',
+        response = client.put(f'/api/v1/students/{student_id}',
                              data=json.dumps({'age': 30}),
                              content_type='application/json')
         
@@ -293,18 +294,18 @@ class TestDeleteStudent:
         """Test deleting a student successfully"""
         student_id = created_student['id']
         
-        response = client.delete(f'/students/{student_id}')
+        response = client.delete(f'/api/v1/students/{student_id}')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['message'] == 'Student deleted'
         
         # Verify the student is actually deleted
-        get_response = client.get(f'/students/{student_id}')
+        get_response = client.get(f'/api/v1/students/{student_id}')
         assert get_response.status_code == 404
 
     def test_delete_student_not_found(self, client):
         """Test deleting a student that doesn't exist"""
-        response = client.delete('/students/999')
+        response = client.delete('/api/v1/students/999')
         assert response.status_code == 404
         data = json.loads(response.data)
         assert data['error'] == 'Student not found'
@@ -315,11 +316,11 @@ class TestDeleteStudent:
         remaining_student = multiple_students[1]
         
         # Delete one student
-        response = client.delete(f'/students/{student_to_delete["id"]}')
+        response = client.delete(f'/api/v1/students/{student_to_delete["id"]}')
         assert response.status_code == 200
         
         # Verify only one student remains
-        response = client.get('/students')
+        response = client.get(f'{URL_PREFIX}/students')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -443,7 +444,7 @@ class TestEdgeCases:
     
     def test_create_student_with_none_json(self, client):
         """Test creating a student when no JSON is provided"""
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=None,
                               content_type='application/json')
         
@@ -455,7 +456,7 @@ class TestEdgeCases:
         invalid_data = sample_student_data.copy()
         invalid_data['age'] = invalid_age
         
-        response = client.post('/students',
+        response = client.post(f'{URL_PREFIX}/students',
                               data=json.dumps(invalid_data),
                               content_type='application/json')
         
@@ -467,7 +468,7 @@ class TestEdgeCases:
         """Test updating a student with empty JSON"""
         student_id = created_student['id']
         
-        response = client.put(f'/students/{student_id}',
+        response = client.put(f'/api/v1/students/{student_id}',
                              data=json.dumps({}),
                              content_type='application/json')
         
