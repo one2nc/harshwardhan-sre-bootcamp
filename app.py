@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
+import socket
 
 load_dotenv() # for Devlopment env
 
@@ -156,7 +157,7 @@ def delete_student(id):
 
 @app.route('/healthcheck', methods=['GET'])
 def healthcheck():
-    return jsonify({'Status': 'OK'}), 200
+    return jsonify({'Status': 'OK', 'Hostname': str(socket.gethostname())}), 200
 
 # Initialize the database (run this once to create the database)
 with app.app_context():

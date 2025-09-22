@@ -1,16 +1,43 @@
 services: 
-  web:    
+  api:    
     depends_on:
      init-migratedb:
         condition: service_completed_successfully
     build: .
-    ports:     
-      - "5000:5000"    
+    # ports:     
+    #   - "8081:5000"    
     volumes:      
       - .env:/app/.env
       - './instance/:/app/instance'
     links:
       - db
+  api2:    
+    depends_on:
+     init-migratedb:
+        condition: service_completed_successfully
+    build: .
+    # ports:     
+    #   - "8082:5000"    
+    volumes:      
+      - .env:/app/.env
+      - './instance/:/app/instance'
+    links:
+      - db
+  nginx:
+    depends_on:
+      api:
+        condition: service_started
+      api2:
+        condition: service_started
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8080:80
+    links:
+      - api
+      - api2
+
   init-migratedb:
     build: .
     env_file: ".env"
@@ -21,10 +48,16 @@ services:
       - db
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
   db:
     image: postgres:17
     env_file: ".env"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
 
 
