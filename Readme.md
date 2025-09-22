@@ -89,7 +89,7 @@ make serve-docker
 ## Vagrant
 If you want to use Vagrant.You can use the below commands:
 ``` bash
-make serve-vagrant
+sudo make serve-vagrant
 ```
 ## Database Schema
 
