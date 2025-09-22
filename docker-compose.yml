@@ -1,8 +1,30 @@
 services: 
   web:    
+    depends_on:
+     init-migratedb:
+        condition: service_completed_successfully
     build: .
     ports:     
       - "5000:5000"    
     volumes:      
       - .env:/app/.env
       - './instance/:/app/instance'
+    links:
+      - db
+  init-migratedb:
+    build: .
+    env_file: ".env"
+    volumes:
+      - ./migrate_db.sh:/app/migrate_db.sh
+    command: ['sh','/app/migrate_db.sh']
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_started
+  db:
+    image: postgres:17
+    env_file: ".env"
+
+
+

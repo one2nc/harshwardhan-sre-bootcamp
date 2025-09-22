@@ -40,8 +40,8 @@ serve-prod: $(VENV)/bin/activate
 serve-docker: 
 # 	docker run --rm -p 5000:5000 -v .env:/app/.env student-api:$(COMMIT_ID)
 # 	docker compose up db
-	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db migrate
-	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db upgrade
+# 	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db migrate
+# 	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db upgrade
 	docker compose up -d
 
 stop-docker:
