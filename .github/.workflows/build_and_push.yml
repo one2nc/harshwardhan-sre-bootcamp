@@ -2,7 +2,7 @@ name: Build and Deploy Application
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ exercise-4 ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
