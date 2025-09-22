@@ -15,7 +15,7 @@ permissions:
 
 env:
   DOCKER_REPOSITORY: student-api
-  SQLITE_DB: ${{ secrets.SQLITE_DB }}
+  DB_URL: ${{ secrets.DB_URL }}
 
 jobs:
   test:
@@ -28,6 +28,8 @@ jobs:
       with:
         ref: 'exercise-4'
 
+    - name: Run Tests
+      run: docker run -d --rm -p "5432:5432" -e POSTGRES_DB=${{ secrets.DB_NAME }} -e POSTGRES_USER=${{ secrets.DB_USER }} -e POSTGRES_PASSWORD=${{ secrets.DB_PASS }} postgres:17
 
     - name: Run Tests
       run: make test

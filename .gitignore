@@ -4,3 +4,4 @@ venv/
 instance/
 .pytest_cache/
 .ruff_cache/
+.vagrant/
