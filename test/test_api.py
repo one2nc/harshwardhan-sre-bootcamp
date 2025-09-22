@@ -253,7 +253,7 @@ class TestUpdateStudent:
 
     def test_update_student_duplicate_email(self, client, multiple_students):
         """Test updating a student with an email that already exists"""
-        student1_id = multiple_students[0]['id']
+        # student1_id = multiple_students[0]['id']
         student2_id = multiple_students[1]['id']
         
         # Try to update student2 with student1's email
