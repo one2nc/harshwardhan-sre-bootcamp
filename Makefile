@@ -42,6 +42,9 @@ serve-docker:
 # 	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db migrate
 # 	docker run -v instance:/app/instance -v .env:/app/.env student-api:$(COMMIT_ID) flask db upgrade
 	docker compose up -d
+serve-vagrant: 
+	vagrant up --provider=virtualbox --provision
+
 docker-push:
 	docker push $(DOCKER_REGISTRY):$(COMMIT_ID)
 

@@ -27,6 +27,8 @@ A simple RESTful API built with Flask for managing student records. This applica
 - Make (optional, for using Makefile commands)
 - Docker (optional)
 - Docker-compose (optional)
+- Vagrant (optional)
+- VirtualBox (for Vagrant)
 
 ### Setup
 
@@ -84,6 +86,11 @@ make build
 make serve-docker
 ```
 
+## Vagrant
+If you want to use Vagrant.You can use the below commands:
+``` bash
+make serve-vagrant
+```
 ## Database Schema
 
 ### Student Model
@@ -129,7 +136,10 @@ make clean
 
 The application uses environment variables for configuration:
 
-- **SQLITE_DB** - Database connection string (Example: sqlite:///students.db)
+- **DB_URL** - Database connection string (Example: sqlite:///students.db or postgresql://user:password@host:port/dbname)
+- **POSTGRES_DB** - Database Name (Only if using postgres)
+- **POSTGRES_USER** - Database Username (Only if using postgres)
+- **POSTGRES_PASSWORD** - Database Password (Only if using postgres)
 
 ## Project Structure
 
