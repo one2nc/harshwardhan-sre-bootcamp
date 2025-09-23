@@ -59,3 +59,18 @@ clean:
 	rm -rf __pycache__
 	rm -rf venv
 	rm -rf .pytest_cache
+	minikube delete
+	docker compose down --rmi all --remove-orphans
+
+minikube-setup:
+	minikube start -n 4
+	kubectl label node minikube-m02 type=application
+	kubectl label node minikube-m03 type=database
+	kubectl label node minikube-m04 type=dependent_services
+
+minikube-stop:
+	minikube stop
+
+minikube-start:
+	minikube start -n 4
+

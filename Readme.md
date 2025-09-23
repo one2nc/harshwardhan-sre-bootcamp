@@ -29,6 +29,7 @@ A simple RESTful API built with Flask for managing student records. This applica
 - Docker-compose (optional)
 - Vagrant (optional)
 - VirtualBox (for Vagrant)
+- Minikube (Docker Required)
 
 ### Setup
 
@@ -55,7 +56,8 @@ pip install -r requirements.txt
 DB_URL=postgresql://user:password@host:port/dbname
 POSTGRES_DB=mydatabase
 POSTGRES_USER=myuser
-POSTGRES_PASSWORD=mypassword```
+POSTGRES_PASSWORD=mypassword
+```
 
 ## Usage
 
@@ -90,6 +92,14 @@ make serve-docker
 If you want to use Vagrant.You can use the below commands:
 ``` bash
 sudo make serve-vagrant
+```
+
+## Minikube
+If you want to use Minikube.You can use the below commands:
+``` bash
+make minikube-setup # this will setup a (1+3) node cluster
+make minikube-start # Resume the cluster
+make minikube-stop # Pause the cluster
 ```
 ## Database Schema
 
