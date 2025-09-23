@@ -4,11 +4,11 @@ A simple RESTful API built with Flask for managing student records. This applica
 
 ## Features
 
-- **GET /students** - Retrieve all students
-- **GET /students/{id}** - Retrieve a specific student by ID
-- **POST /students** - Create a new student
-- **PUT /students/{id}** - Update an existing student
-- **DELETE /students/{id}** - Delete a student
+- **GET /api/v1/students** - Retrieve all students
+- **GET /api/v1/students/{id}** - Retrieve a specific student by ID
+- **POST /api/v1/students** - Create a new student
+- **PUT /api/v1/students/{id}** - Update an existing student
+- **DELETE /api/v1/students/{id}** - Delete a student
 - **GET /healthcheck** - API health status
 
 ## Tech Stack
