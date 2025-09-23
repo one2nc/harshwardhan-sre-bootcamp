@@ -25,6 +25,8 @@ A simple RESTful API built with Flask for managing student records. This applica
 
 - Python 3.7 or higher
 - Make (optional, for using Makefile commands)
+- Docker (optional)
+- Docker-compose (optional)
 
 ### Setup
 
@@ -48,8 +50,10 @@ pip install -r requirements.txt
 
 3. Create a `.env` file in the root directory(for developement):
 ```env
-SQLITE_DB=sqlite:///students.db
-```
+DB_URL=postgresql://user:password@host:port/dbname
+POSTGRES_DB=mydatabase
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword```
 
 ## Usage
 
@@ -89,6 +93,15 @@ make serve-docker
 - **age** (Integer, Required) - Student's age
 - **email** (String, Required, Unique) - Student's email address
 
+## Sample Payload
+```json
+{
+    "first_name": "a",
+    "last_name": "b",
+    "age": 10,
+    "email": "asdc3@gmail.com"
+}
+```
 ## Development
 
 ### Database Migrations
