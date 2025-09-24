@@ -77,3 +77,7 @@ minikube-start:
 minikube-deploy:
 	cd $(CURDIR)/k8s/scripts;sh helm.sh
 	cd $(CURDIR)/k8s;kubectl apply -f ./dependent-service.yaml;kubectl apply -f ./database.yaml;kubectl apply -f ./application.yaml;
+
+minikube-deploy-helm:
+	cd $(CURDIR)/k8s/scripts;sh helm.sh
+	cd $(CURDIR)/k8s/Helm/student-api-chart/;helm upgrade --install student-api . -n student-api --create-namespace

@@ -15,8 +15,9 @@ helm upgrade --install vault hashicorp/vault -n vault-ns \
     --set injector.enabled=false \
     --set server.nodeSelector.type=dependent_services
 
-kubectl apply -f ./pv-hack.yaml
+#moved to helm chart
+# kubectl apply -f ./pv-hack.yaml
 
-kubectl create cm -n vault-ns setup-script --from-file=vault_setup.sh
+# kubectl create cm -n vault-ns setup-script --from-file=vault_setup.sh
 
-kubectl apply -f ./job.yaml
+# kubectl apply -f ./job.yaml
