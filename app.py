@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
+import socket
 
 load_dotenv() # for Devlopment env
 
@@ -14,7 +15,7 @@ app = Flask(__name__)
 # db_path=os.path.join(os.path.dirname(__file__), "students.db")
 # app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLITE_DB")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the SQLAlchemy object
@@ -156,7 +157,7 @@ def delete_student(id):
 
 @app.route('/healthcheck', methods=['GET'])
 def healthcheck():
-    return jsonify({'Status': 'OK'}), 200
+    return jsonify({'Status': 'OK', 'Hostname': str(socket.gethostname())}), 200
 
 # Initialize the database (run this once to create the database)
 with app.app_context():
