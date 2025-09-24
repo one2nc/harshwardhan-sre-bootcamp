@@ -5,6 +5,7 @@ PIP := $(VENV)/bin/pip
 COMMIT_ID != git rev-parse HEAD | cut -c -8
 DOCKER_USERNAME ?= harsh18262-n
 DOCKER_REGISTRY := $(DOCKER_USERNAME)/student-api
+
 # include .env
 # export $(shell sed 's/=.*//' .env)
 
@@ -51,6 +52,7 @@ docker-push:
 docker-stop:
 	docker compose down
 	
+
 venv/bin/activate: requirements.txt
 				   python3 -m venv venv
 				   $(PIP) install -r requirements.txt
