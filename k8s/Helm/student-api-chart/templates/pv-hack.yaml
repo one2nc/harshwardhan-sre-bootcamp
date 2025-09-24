@@ -5,6 +5,10 @@ metadata:
   name: minikube-pv-hack
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-11"
+    "helm.sh/hook-delete-policy": before-hook-creation
 
 ---
 apiVersion: apps/v1
@@ -14,6 +18,10 @@ metadata:
   namespace: minikube-pv-hack
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-11"
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   selector:
     matchLabels:

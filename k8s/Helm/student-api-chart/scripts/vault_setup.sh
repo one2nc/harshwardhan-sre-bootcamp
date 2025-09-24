@@ -10,8 +10,39 @@ POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword
 DB_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db-service:5432/$POSTGRES_DB
 
-
 apk update;apk add jq curl
+
+# Wait for Vault to return HTTP 200
+echo "Waiting for Vault to return HTTP 200..."
+max_attempts=60
+attempt=1
+wait_interval=5
+
+while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt/$max_attempts: Checking Vault health..."
+    
+    # Get HTTP status code using curl
+    response=$(curl -s -o /dev/null -w "%{http_code}" "$VAULT_ADDR/v1/sys/health" 2>/dev/null)
+    
+    if [ "$response" = "501" ]; then
+        echo "✅ Vault returned HTTP 501! Proceeding with initialization..."
+        break
+    else
+        echo "⏳ Vault returned status $response, waiting..."
+    fi
+    
+    if [ $attempt -eq $max_attempts ]; then
+        echo "❌ Timeout: Vault did not return HTTP 200 within $(($max_attempts * $wait_interval)) seconds"
+        echo "Last response code: $response"
+        exit 1
+    fi
+    
+    echo "Waiting $wait_interval seconds before next attempt..."
+    sleep $wait_interval
+    attempt=$((attempt + 1))
+done
+
+
 vault operator init -n 1 -t 1 -format=json > $FILE_PATH
 
 unseal_key=$(jq -r .unseal_keys_b64[0] $FILE_PATH )

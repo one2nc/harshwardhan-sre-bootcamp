@@ -6,6 +6,10 @@ metadata:
   namespace: vault-ns
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
 rules:
 - apiGroups:
   - ""
@@ -27,6 +31,10 @@ metadata:
   namespace: vault-ns
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -43,6 +51,10 @@ metadata:
   namespace: vault-ns
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -51,6 +63,10 @@ metadata:
   namespace: vault-ns
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
 data:
   vault_setup.sh: |-
   {{- .Files.Get "scripts/vault_setup.sh" | nindent 4 }}
@@ -63,6 +79,10 @@ metadata:
   namespace: vault-ns
   labels:
     {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-9"
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   template:
     metadata: {}
@@ -81,5 +101,7 @@ spec:
           mountPath: /script
       restartPolicy: Never
       serviceAccountName: job-sa
+      nodeSelector:
+        type: dependent-services
 status: {}
 {{end}}
