@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: db
+  name: db
+  namespace: student-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - image: postgres:17
+        name: postgres
+        resources: {}
+        envFrom:
+        - secretRef:
+            name: db-creds
+      nodeSelector: 
+        type: database
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  namespace: student-api
+spec:
+  selector:
+    app: db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+
