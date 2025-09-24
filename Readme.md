@@ -4,11 +4,11 @@ A simple RESTful API built with Flask for managing student records. This applica
 
 ## Features
 
-- **GET /students** - Retrieve all students
-- **GET /students/{id}** - Retrieve a specific student by ID
-- **POST /students** - Create a new student
-- **PUT /students/{id}** - Update an existing student
-- **DELETE /students/{id}** - Delete a student
+- **GET /api/v1/students** - Retrieve all students
+- **GET /api/v1/students/{id}** - Retrieve a specific student by ID
+- **POST /api/v1/students** - Create a new student
+- **PUT /api/v1/students/{id}** - Update an existing student
+- **DELETE /api/v1/students/{id}** - Delete a student
 - **GET /healthcheck** - API health status
 
 ## Tech Stack
@@ -88,6 +88,7 @@ make build
 make serve-docker
 ```
 
+
 ## Vagrant
 If you want to use Vagrant.You can use the below commands:
 ``` bash
@@ -104,6 +105,7 @@ make minikube-stop # Pause the cluster
 #Once the minikube cluster is up and healthy
 make minikube-deploy  # this will deploy the application
 ```
+
 Make sure to update DB details in the k8s/scripts/vault_setup.sh
 For the Minikube approach for now I am using a hack for setting up the permissions on the the hostpath volume as a workaround to that bug. [Link to github Issue](https://github.com/kubernetes/minikube/issues/1990)
 
