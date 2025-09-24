@@ -104,6 +104,7 @@ make minikube-stop # Pause the cluster
 #Once the minikube cluster is up and healthy
 make minikube-deploy  # this will deploy the application
 ```
+Make sure to update DB details in the k8s/scripts/vault_setup.sh
 For the Minikube approach for now I am using a hack for setting up the permissions on the the hostpath volume as a workaround to that bug. [Link to github Issue](https://github.com/kubernetes/minikube/issues/1990)
 
 
