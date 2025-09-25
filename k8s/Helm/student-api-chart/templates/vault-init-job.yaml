@@ -91,6 +91,9 @@ spec:
       - name: script-volume
         configMap:
           name: setup-script
+      - name: host-vol
+        hostPath:
+          path: /tmp/hostpath-provisioner/
       containers:
       - image: hashicorp/vault
         name: bootstrap-vault
@@ -101,10 +104,6 @@ spec:
           mountPath: /script
         - name: host-vol
           mountPath: /target
-      volumes:
-      - name: host-vol
-        hostPath:
-          path: /tmp/hostpath-provisioner/
       restartPolicy: Never
       serviceAccountName: job-sa
       nodeSelector:
