@@ -2,7 +2,7 @@ name: Build and Deploy Application
 
 on:
   push:
-    branches: [ exercise-4 ]
+    branches: [ main, exercise-9]
     paths:
       - '*'
       
@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
 
 env:
   DOCKER_REPOSITORY: student-api
@@ -26,7 +27,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v5
       with:
-        ref: 'exercise-4'
+        ref: 'main'
 
     - name: Run Tests
       run: docker run -d --rm -p "5432:5432" -e POSTGRES_DB=${{ secrets.DB_NAME }} -e POSTGRES_USER=${{ secrets.DB_USER }} -e POSTGRES_PASSWORD=${{ secrets.DB_PASS }} postgres:17
@@ -43,7 +44,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v5
       with:
-        ref: 'exercise-4'
+        ref: 'main'
 
     - name: Install Ruff
       id: install-ruff
@@ -57,14 +58,12 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: linting
-    outputs:
-      image-uri: ${{ steps.build-image.outputs.image }}
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
       with:
-        ref: 'exercise-4'
+        ref: 'main'
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -77,3 +76,21 @@ jobs:
       run: |
           make docker-build DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
           make docker-push DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+  update-helm:
+    name: Update Helm values
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        ref: 'helm'
+
+    - name: Update Image tag
+      id: build-image
+      run: |
+          apt update;apt install yq
+          make update-helm
+          git add .
+          git commit -m "Update new tag"
+          git push

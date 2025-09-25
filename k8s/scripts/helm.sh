@@ -15,6 +15,10 @@ helm upgrade --install vault hashicorp/vault -n vault-ns \
     --set injector.enabled=false \
     --set server.nodeSelector.type=dependent_services
 
+#Argo-CD Installation
+helm repo add argo https://argoproj.github.io/argo-helm
+helm install argocd argo/argo-cd  -n argo-ns --create-namespace --set global.nodeSelector.type=dependent_services
+
 #moved to helm chart
 # kubectl apply -f ./pv-hack.yaml
 
