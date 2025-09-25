@@ -81,3 +81,6 @@ minikube-deploy:
 minikube-deploy-helm:
 	cd $(CURDIR)/k8s/scripts;sh helm.sh
 	cd $(CURDIR)/k8s/Helm/student-api-chart/;helm upgrade --install student-api . -n student-api --create-namespace
+
+update-helm:
+	yq -i -y '.apps.api.tag="$()"' $(CURDIR)/k8s/Helm/student-api-chart/values.yaml 
