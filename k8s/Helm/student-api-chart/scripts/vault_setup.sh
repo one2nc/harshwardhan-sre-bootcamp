@@ -27,7 +27,7 @@ while [ $attempt -le $max_attempts ]; do
     if [ "$response" = "501" ]; then
         echo "✅ Vault returned HTTP 501! Proceeding with initialization..."
         break
-    if [ "$response" = "200" ]; then
+    elif [ "$response" = "200" ]; then
         echo "✅ Vault returned HTTP 200! Vault is already initialized"
         exit 0
     else
