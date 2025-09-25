@@ -1,7 +1,7 @@
 VENV := venv
 PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
-# COMMIT_ID:= $(git rev-parse HEAD | cut -c -8)
+# COMMIT_ID:= $(shell git rev-parse HEAD | cut -c -8)
 COMMIT_ID != git rev-parse HEAD | cut -c -8
 DOCKER_USERNAME ?= harsh18262one2n
 DOCKER_REGISTRY := $(DOCKER_USERNAME)/student-api
@@ -33,7 +33,7 @@ lint:
 	ruff check --fix
 
 docker-build: 
-	docker build . -t $(DOCKER_REGISTRY):$(COMMIT_ID)
+	docker buildx build . -t $(DOCKER_REGISTRY):$(COMMIT_ID)
 
 
 serve-docker: 
@@ -47,6 +47,9 @@ serve-vagrant:
 
 docker-push:
 	docker push $(DOCKER_REGISTRY):$(COMMIT_ID)
+
+docker-imagetag:
+	@echo "IMAGETAG=$(COMMIT_ID)"
 
 docker-stop:
 	docker compose down
@@ -82,5 +85,5 @@ minikube-deploy-helm:
 	cd $(CURDIR)/k8s/scripts;sh helm.sh
 	cd $(CURDIR)/k8s/Helm/student-api-chart/;helm upgrade --install student-api . -n student-api --create-namespace
 
-update-helm:
-	yq -i -y '.apps.api.tag="$()"' $(CURDIR)/k8s/Helm/student-api-chart/values.yaml 
+# update-helm:
+# 	yq -i ".apps.api.tag=$(COMMIT_ID)" $(CURDIR)/k8s/Helm/student-api-chart/values.yaml 
