@@ -45,6 +45,8 @@ while [ $attempt -le $max_attempts ]; do
     attempt=$((attempt + 1))
 done
 
+#Set permissions to allow vault to write in it's PV
+chmod -R 777 /target/*
 
 vault operator init -n 1 -t 1 -format=json > $FILE_PATH
 

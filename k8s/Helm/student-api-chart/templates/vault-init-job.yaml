@@ -99,6 +99,12 @@ spec:
         volumeMounts:
         - name: script-volume
           mountPath: /script
+        - name: host-vol
+          mountPath: /target
+      volumes:
+      - name: host-vol
+        hostPath:
+          path: /tmp/hostpath-provisioner/
       restartPolicy: Never
       serviceAccountName: job-sa
       nodeSelector:
