@@ -9,7 +9,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 rules:
 - apiGroups:
   - ""
@@ -34,7 +34,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -54,7 +54,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -66,7 +66,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 data:
   vault_setup.sh: |-
   {{- .Files.Get "scripts/vault_setup.sh" | nindent 4 }}
@@ -82,7 +82,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-9"
-    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata: {}
@@ -91,6 +91,9 @@ spec:
       - name: script-volume
         configMap:
           name: setup-script
+      - name: host-vol
+        hostPath:
+          path: /tmp/hostpath-provisioner/
       containers:
       - image: hashicorp/vault
         name: bootstrap-vault
@@ -99,9 +102,11 @@ spec:
         volumeMounts:
         - name: script-volume
           mountPath: /script
+        - name: host-vol
+          mountPath: /target
       restartPolicy: Never
       serviceAccountName: job-sa
       nodeSelector:
-        type: dependent-services
+        type: dependent_services
 status: {}
 {{end}}
