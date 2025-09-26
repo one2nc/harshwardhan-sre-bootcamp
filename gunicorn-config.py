@@ -15,3 +15,6 @@ loglevel = "info"
 preload_app=True
 
 worker_class="sync" # use Uvicorn class for async apps
+
+accesslog = '-'
+errorlog = '-'
