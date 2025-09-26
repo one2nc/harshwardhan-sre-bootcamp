@@ -16,5 +16,6 @@ spec:
       name: {{$app.service.name | default $appName }}
   selector:
     app: {{$appName}}
+---
 {{end}}
 {{end}}
