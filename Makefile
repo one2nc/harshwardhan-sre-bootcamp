@@ -6,6 +6,7 @@ COMMIT_ID != git rev-parse HEAD | cut -c -8
 IMAGETAG := api-$(COMMIT_ID)
 DOCKER_USERNAME ?= harsh18262one2n
 DOCKER_REGISTRY := $(DOCKER_USERNAME)/student-api
+
 # include .env
 # export $(shell sed 's/=.*//' .env)
 
@@ -55,6 +56,7 @@ docker-imagetag:
 docker-stop:
 	docker compose down
 	
+
 venv/bin/activate: requirements.txt
 				   python3 -m venv venv
 				   $(PIP) install -r requirements.txt
