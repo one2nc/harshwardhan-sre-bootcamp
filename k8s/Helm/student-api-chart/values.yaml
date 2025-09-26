@@ -3,7 +3,7 @@ apps:
     enabled: true
     namespace: student-api
     image: harsh18262one2n/student-api
-    tag: 958754e0
+    tag: api-d066331b
     envSecretName: db-creds
     nodeSelector:
       type: application
