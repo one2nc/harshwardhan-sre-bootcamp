@@ -3,6 +3,7 @@ PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
 # COMMIT_ID:= $(shell git rev-parse HEAD | cut -c -8)
 COMMIT_ID != git rev-parse HEAD | cut -c -8
+IMAGETAG := api-$(COMMIT_ID)
 DOCKER_USERNAME ?= harsh18262one2n
 DOCKER_REGISTRY := $(DOCKER_USERNAME)/student-api
 # include .env
@@ -33,7 +34,7 @@ lint:
 	ruff check --fix
 
 docker-build: 
-	docker buildx build . -t $(DOCKER_REGISTRY):$(COMMIT_ID)
+	docker buildx build . -t $(DOCKER_REGISTRY):$(IMAGETAG)
 
 
 serve-docker: 
@@ -46,10 +47,10 @@ serve-vagrant:
 	vagrant up --provider=virtualbox --provision
 
 docker-push:
-	docker push $(DOCKER_REGISTRY):$(COMMIT_ID)
+	docker push $(DOCKER_REGISTRY):$(IMAGETAG)
 
 docker-imagetag:
-	@echo "IMAGETAG=$(COMMIT_ID)"
+	@echo "IMAGETAG=$(IMAGETAG)"
 
 docker-stop:
 	docker compose down
