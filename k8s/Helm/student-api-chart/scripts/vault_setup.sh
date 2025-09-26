@@ -27,12 +27,16 @@ while [ $attempt -le $max_attempts ]; do
     if [ "$response" = "501" ]; then
         echo "✅ Vault returned HTTP 501! Proceeding with initialization..."
         break
+    elif [ ["$response" = "503"] || ["$response" = "200"]  ]; then
+        echo "✅ Vault returned HTTP $response! Already initialized exiting"
+        exit 0
+        break
     else
         echo "⏳ Vault returned status $response, waiting..."
     fi
     
     if [ $attempt -eq $max_attempts ]; then
-        echo "❌ Timeout: Vault did not return HTTP 200 within $(($max_attempts * $wait_interval)) seconds"
+        echo "❌ Timeout: Vault did not return HTTP 501 within $(($max_attempts * $wait_interval)) seconds"
         echo "Last response code: $response"
         exit 1
     fi
