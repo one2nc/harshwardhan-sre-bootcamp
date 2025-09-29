@@ -1,0 +1,107 @@
+{{- if .Values.init_vault }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: write-secret-and-read-cm
+  namespace: vault-ns
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - configmap
+  verbs:
+  - read
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: job-sa-rb
+  namespace: vault-ns
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: write-secret-and-read-cm
+subjects:
+- kind: ServiceAccount
+  name: job-sa
+  namespace: vault-ns
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: job-sa
+  namespace: vault-ns
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: setup-script
+  namespace: vault-ns
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+data:
+  vault_setup.sh: |-
+  {{- .Files.Get "scripts/vault_setup.sh" | nindent 4 }}
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bootstrap-vault
+  namespace: vault-ns
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-9"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata: {}
+    spec:
+      volumes:
+      - name: script-volume
+        configMap:
+          name: setup-script
+      containers:
+      - image: hashicorp/vault
+        name: bootstrap-vault
+        resources: {}
+        command: ['sh','/script/vault_setup.sh']
+        volumeMounts:
+        - name: script-volume
+          mountPath: /script
+      restartPolicy: Never
+      serviceAccountName: job-sa
+      nodeSelector:
+        type: dependent-services
+status: {}
+{{end}}

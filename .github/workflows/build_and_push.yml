@@ -2,16 +2,17 @@ name: Build and Deploy Application
 
 on:
   push:
-    branches: [ exercise-4 ]
+    branches: [ main, exercise-9]
     paths:
       - '*'
       
-  pull_request:
-    branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
 
 env:
   DOCKER_REPOSITORY: student-api
@@ -20,51 +21,50 @@ env:
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-      with:
-        ref: 'exercise-4'
+
 
     - name: Run Tests
-      run: docker run -d --rm -p "5432:5432" -e POSTGRES_DB=${{ secrets.DB_NAME }} -e POSTGRES_USER=${{ secrets.DB_USER }} -e POSTGRES_PASSWORD=${{ secrets.DB_PASS }} postgres:17
+      run: docker run -d --rm --name db -p "5432:5432" -e POSTGRES_DB=${{ secrets.DB_NAME }} -e POSTGRES_USER=${{ secrets.DB_USER }} -e POSTGRES_PASSWORD=${{ secrets.DB_PASS }} postgres:17
 
     - name: Run Tests
       run: make test
+    - name: Clean up Container
+      run: docker container rm -f db 
 
   linting:
     name: Code Linting
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: test
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-      with:
-        ref: 'exercise-4'
+
 
     - name: Install Ruff
       id: install-ruff
       run: |
-          python -m pip install ruff
+          python3 -m pip install --break-system-packages ruff
 
     - name: Run Ruff
       run: make lint
 
   build:
     name: Build and Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: linting
     outputs:
-      image-uri: ${{ steps.build-image.outputs.image }}
+      image_tag: ${{ steps.image-uri.outputs.IMAGETAG }}
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-      with:
-        ref: 'exercise-4'
+
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -77,3 +77,31 @@ jobs:
       run: |
           make docker-build DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
           make docker-push DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+    
+    - name: Set image URI
+      id: image-uri
+      run: |
+        make docker-imagetag
+        make docker-imagetag >> "$GITHUB_OUTPUT"
+  update-helm:
+    name: Update Helm values
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        ref: 'helm'
+    - name: Set Git User Identity
+      run: |
+        git config --global user.email github-actions@bot.com
+        git config --global user.name github-bot
+
+    - name: Update Image Tag
+      id: build-image
+      run: |
+          sudo apt update;sudo apt install yq -y
+          COMMIT_ID=${{ needs.build.outputs.image_tag }}; echo $COMMIT_ID;yq -i -y ".apps.api.tag=\"$COMMIT_ID\"" k8s/Helm/student-api-chart/values.yaml
+          git add .
+          git commit -m "Update new tag"
+          git push
