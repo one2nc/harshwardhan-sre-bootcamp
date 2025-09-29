@@ -90,3 +90,6 @@ minikube-deploy-helm:
 
 # update-helm:
 # 	yq -i ".apps.api.tag=$(COMMIT_ID)" $(CURDIR)/k8s/Helm/student-api-chart/values.yaml 
+
+deploy-monitoring:
+	cd $(CURDIR)/k8s/Helm/monitoring;helm dependency update; helm upgrade --install observability . -n observability-ns --create-namespace
