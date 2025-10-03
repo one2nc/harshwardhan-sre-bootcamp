@@ -3,14 +3,14 @@ apps:
     enabled: true
     namespace: student-api
     image: harsh18262one2n/student-api
-    tag: api-e2c68050
+    tag: api-18c1826d
     envSecretName: db-creds
     nodeSelector:
       type: application
     initContainers:
       - name: init-db
         image: harsh18262one2n/student-api
-        tag: 50c8f8e9
+        tag: api-18c1826d
         command:
           - sh
           - -c
