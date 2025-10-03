@@ -1,0 +1,21 @@
+{{- range $appName, $app := .Values.apps }}
+{{- if and $app.enabled $app.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-service" $appName}}
+  namespace: {{$app.namespace}}
+  labels:
+    {{- include "student-api-chart.labels" $ | nindent 4 }}
+spec:
+  type: {{ $app.service.type | default "ClusterIP"}}
+  ports:
+    - port: {{ $app.service.port }}
+      targetPort: {{$app.service.targetPort | default $app.service.port }}
+      protocol: {{$app.service.protocol | default "TCP"}}
+      name: {{$app.service.name | default $appName }}
+  selector:
+    app: {{$appName}}
+---
+{{end}}
+{{end}}
