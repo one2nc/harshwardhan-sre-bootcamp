@@ -67,21 +67,6 @@ kube-prometheus-stack:
         type: dependent_services
 
   alertmanager:
-    # config:
-    #   global:
-    #     slack_api_url: 'https://hooks.slack.com/services/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'
-    #   route:
-    #     receiver: 'slack-notification'
-    #   receivers:
-    #     - name: 'slack_notification'
-    #       slack_configs:
-    #         - api_url: 'https://hooks.slack.com/services/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'
-    #           channel: 'bootcamp-alerts' # Replace with your Slack channel name
-    #           send_resolved: true # Send notifications when alerts are resolved
-    #           # Optional: Customize the notification appearance
-    #           icon_emoji: ':alert:'
-    #           title: '[{{ .CommonLabels.alertname }}] - {{ .CommonLabels.severity }}'
-    #           text: '{{ .CommonAnnotations.summary }}'
     alertmanagerSpec:
       alertmanagerConfigMatcherStrategy:
         type: None
@@ -100,23 +85,7 @@ kube-prometheus-stack:
       enabled: true 
       defaultDashboardsEnabled: false
       nodeSelector:
-        type: dependent_services 
-      # dashboardProviders: 
-      #   dashboardproviders.yaml:
-      #     apiVersion: 1
-      #     providers:
-      #     - name: 'default'
-      #       orgId: 1
-      #       folder: ''
-      #       type: file
-      #       disableDeletion: false
-      #       editable: true
-      #       options:
-      #         path: /var/lib/grafana/dashboards/default
-      # dashboards:
-      #   default:
-      #     custom2:
-      #       file: ../../../dashboards2/blackbox2_dashboard.json
+        type: dependent_services
           
       additionalDataSources: 
         - name: Loki
