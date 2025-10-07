@@ -8,6 +8,8 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+RUN opentelemetry-bootstrap -a install
+
 COPY --exclude=.env --exclude=instance . .
 
 RUN chmod +x entrypoint.sh

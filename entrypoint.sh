@@ -1,1 +1,1 @@
-gunicorn -c gunicorn-config.py app:app
+opentelemetry-instrument --service_name student-api --exporter_otlp_endpoint http://observability-tempo.observability-ns.svc.cluster.local:4317 gunicorn -c gunicorn-config.py app:app

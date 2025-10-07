@@ -63,6 +63,15 @@ kube-prometheus-stack:
             target_label: instance
           - target_label: __address__
             replacement: observability-prometheus-blackbox-exporter:9115
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: [ 'localhost:9090' ]
+        - job_name: 'tempo'
+          static_configs:
+            - targets: [ 'observability-tempo:3200' ]
+        - job_name: 'gunicorn'
+          static_configs:
+            - targets: ['observability-prometheus-statsd-exporter.observability-ns.svc.cluster.local:9102']
       nodeSelector:
         type: dependent_services
 
@@ -93,6 +102,10 @@ kube-prometheus-stack:
           access: proxy
           url:  http://{{ .Release.Name }}-loki:3100/
           version: 1
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://observability-tempo:3200
 prometheus-postgres-exporter:
   enabled: true
   config:
@@ -148,21 +161,21 @@ alertsconfig:
 
 
   - alert: NginxHighHttp4xxErrorRate
-      expr: sum(rate(nginx_http_requests_total{status=~"^4.."}[10m])) / sum(rate(nginx_http_requests_total[10m])) * 100 > 5
-      for: 1m
-      labels:
-        severity: critical
-      annotations:
-        summary: Nginx high HTTP 4xx error rate (instance {{ $labels.instance }})
-        description: "Too many HTTP requests with status 4xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+    expr: sum(rate(nginx_ingress_controller_requests{status=~"^4.."}[10m])) / sum(rate(nginx_ingress_controller_requests[10m])) * 100 > 5
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Nginx high HTTP 4xx error rate (instance {{ $labels.instance }})
+      description: "Too many HTTP requests with status 4xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
   - alert: NginxHighHttp5xxErrorRate
-      expr: sum(rate(nginx_http_requests_total{status=~"^5.."}[10m])) / sum(rate(nginx_http_requests_total[10m])) * 100 > 5
-      for: 1m
-      labels:
-        severity: critical
-      annotations:
-        summary: Nginx high HTTP 5xx error rate (instance {{ $labels.instance }})
-        description: "Too many HTTP requests with status 5xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+    expr: sum(rate(nginx_ingress_controller_requests{status=~"^5.."}[10m])) / sum(rate(nginx_ingress_controller_requests[10m])) * 100 > 5
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Nginx high HTTP 5xx error rate (instance {{ $labels.instance }})
+      description: "Too many HTTP requests with status 5xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
   - alert: HighP90Latency
     expr: histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)) > 0.5
@@ -218,3 +231,52 @@ alertsconfig:
       summary: "ArgoCD server restarted"
       description: "ArgoCD server process restarted in the last 10 minutes"
 
+tempo:
+  enabled: true
+
+ingress-nginx:
+  enabled: true
+  namespaceOverride: "ingress-ns"
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: "observability"
+
+opentelemetry-collector:
+  enabled: true
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+    exporters:
+      otlp:
+        endpoint: observability-tempo:4317
+        tls:
+          insecure: true
+      # prometheus:
+      #   endpoint: observability-kube-prometh-prometheus:9090
+      #   tls:
+      #     insecure: true
+  
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [otlp]
+        metrics:
+          receivers: [otlp]
+          exporters: [otlp]
+
+  image:
+    repository: otel/opentelemetry-collector-k8s
+  mode: deployment
+
+pyroscope:
+  enabled: true
+
+prometheus-statsd-exporter:
+  enabled: true
