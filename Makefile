@@ -3,7 +3,7 @@ PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
 # COMMIT_ID:= $(git rev-parse HEAD | cut -c -8)
 COMMIT_ID != git rev-parse HEAD | cut -c -8
-DOCKER_USERNAME ?= harsh18262-n
+DOCKER_USERNAME ?= harsh18262one2n
 DOCKER_REGISTRY := $(DOCKER_USERNAME)/student-api
 
 # include .env
@@ -76,3 +76,10 @@ minikube-stop:
 minikube-start:
 	minikube start -n 4
 
+minikube-deploy:
+	cd $(CURDIR)/k8s/scripts;sh helm.sh
+	cd $(CURDIR)/k8s;kubectl apply -f ./dependent-service.yaml;kubectl apply -f ./database.yaml;kubectl apply -f ./application.yaml;
+
+minikube-deploy-helm:
+	cd $(CURDIR)/k8s/scripts;sh helm.sh
+	cd $(CURDIR)/k8s/Helm/student-api-chart/;helm upgrade --install student-api . -n student-api --create-namespace

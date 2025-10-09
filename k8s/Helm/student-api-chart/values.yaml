@@ -1,0 +1,51 @@
+apps:
+  api:
+    enabled: true
+    namespace: student-api
+    image: harsh18262one2n/student-api
+    tag: 50c8f8e9
+    envSecretName: db-creds
+    nodeSelector:
+      type: application
+    initContainers:
+      - name: init-db
+        image: harsh18262one2n/student-api
+        tag: 50c8f8e9
+        command: ['sh', '-c', "flask db migrate;flask db upgrade"]
+        envSecretName: db-creds
+    service:
+      enabled: true
+      port: 5000
+  db:
+    enabled: true
+    namespace: student-api
+    image: postgres
+    tag: 17
+    envSecretName: db-creds
+    nodeSelector:
+      type: database
+    service:
+      enabled: true
+      port: 5432
+
+init_vault: true
+enable_pv_hack: true
+
+eso:
+  enabled: true
+  name: db-creds
+  externalSecret:
+    namespace: student-api
+    target_secret: db-creds
+    vault_secret_name: db_details
+  ClusterSecretStore:
+    vault:
+      server: "http://vault.vault-ns.svc.cluster.local:8200"
+      path: secret
+      version: v2
+    auth:
+      tokenSecretRef:
+        name: "vault-token"
+        key: "token"
+        namespace: vault-ns
+    

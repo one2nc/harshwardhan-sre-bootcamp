@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: student-api
+---
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend-global
+spec:
+  provider:
+    vault:
+      server: "http://vault.vault-ns.svc.cluster.local:8200"
+      path: secret
+      version: v2
+      auth:
+        tokenSecretRef:
+          name: "vault-token"
+          key: "token"
+          namespace: vault-ns
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: db-creds
+  namespace: student-api
+spec:
+  refreshInterval: "15s"
+  secretStoreRef:
+    name: vault-backend-global
+    kind: ClusterSecretStore
+  target:
+    name: db-creds
+    creationPolicy: Owner
+  dataFrom:
+  - extract:
+      key: db_details
