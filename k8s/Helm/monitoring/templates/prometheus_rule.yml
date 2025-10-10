@@ -1,4 +1,4 @@
-{{ range $alerts := .Values.alertsconfig.alerts}}
+{{ range $alerts := .Values.alertsconfig.alertscannot import name 'configure_opentelemetry' from 'telemetry'}}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

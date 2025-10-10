@@ -30,6 +30,8 @@ apps:
     service:
       enabled: true
       port: 5432
+
+
 init_vault: true
 enable_pv_hack: true
 eso:
