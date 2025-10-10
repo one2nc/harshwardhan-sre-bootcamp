@@ -5,6 +5,7 @@ CA_CERT="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 NAMESPACE="vault-ns"
 SECRET_NAME="vault-secrets"
 FILE_PATH="/tmp/vault_keys.json"  # Path to the JSON file
+
 POSTGRES_DB=mydb
 POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword

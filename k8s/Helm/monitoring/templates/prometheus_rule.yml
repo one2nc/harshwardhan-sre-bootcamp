@@ -1,0 +1,18 @@
+{{ range $alerts := .Values.alertsconfig.alerts}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    release: {{ $.Release.Name }}
+  name: {{ $.Release.Name }}-{{.alert | lower}}
+spec:
+  groups:
+    - name: {{.alert}}
+      rules:
+        - alert: {{.alert}}
+          expr: {{.expr}}
+          for: {{.for}}
+          labels:
+            severity: {{.labels.severity}}
+---
+{{end}}

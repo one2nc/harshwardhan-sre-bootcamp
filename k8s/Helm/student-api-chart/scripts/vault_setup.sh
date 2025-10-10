@@ -27,15 +27,16 @@ while [ $attempt -le $max_attempts ]; do
     if [ "$response" = "501" ]; then
         echo "✅ Vault returned HTTP 501! Proceeding with initialization..."
         break
-    elif [ "$response" = "200" ]; then
-        echo "✅ Vault returned HTTP 200! Vault is already initialized"
+    elif [ ["$response" = "503"] || ["$response" = "200"]  ]; then
+        echo "✅ Vault returned HTTP $response! Already initialized exiting"
         exit 0
+        break
     else
         echo "⏳ Vault returned status $response, waiting..."
     fi
     
     if [ $attempt -eq $max_attempts ]; then
-        echo "❌ Timeout: Vault did not return HTTP 200/501 within $(($max_attempts * $wait_interval)) seconds"
+        echo "❌ Timeout: Vault did not return HTTP 501 within $(($max_attempts * $wait_interval)) seconds"
         echo "Last response code: $response"
         exit 1
     fi
@@ -45,8 +46,6 @@ while [ $attempt -le $max_attempts ]; do
     attempt=$((attempt + 1))
 done
 
-#Set permissions to allow vault to write in it's PV
-chmod -R 777 /target/*
 
 vault operator init -n 1 -t 1 -format=json > $FILE_PATH
 

@@ -25,7 +25,7 @@ spec:
         {{- range $init:= .}}
         - name: {{$init.name}}
           image: {{ $init.image | default "$app.image"}}:{{ $init.tag | default $app.tag}}
-          {{- with .command}}
+          {{- with $app.command}}
           command: {{ toJson . }}
           {{- end}}
           {{- with .envSecretName}}

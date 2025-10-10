@@ -1,0 +1,220 @@
+loki-stack:
+  enabled: true
+  grafana:
+    enabled: false
+  prometheus:
+    enabled: false
+  loki:
+    nodeSelector:
+      type: dependent_services
+  promtail:
+    config:
+      clients:
+        - url: http://{{ .Release.Name }}-loki:3100/loki/api/v1/push
+      snippets:
+        extraScrapeConfigs: |
+          - job_name: kubernetes-pods-api
+            kubernetes_sd_configs:
+            - role: pod
+            relabel_configs:
+              - source_labels: [__meta_kubernetes_pod_label_app]
+                regex: api
+                action: keep
+              - source_labels: [__meta_kubernetes_namespace]
+                target_label: namespace
+              - source_labels: [__meta_kubernetes_pod_name]
+                target_label: pod
+              - action: replace
+                source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+                target_label: __path__
+                separator: /
+                replacement: /var/log/pods/*$1/*.log
+        scrapeConfigs: ""
+  
+
+kube-prometheus-stack:
+  enabled: true
+  defaultRules:
+    create: false
+  
+  kube-state-metrics:
+    nodeSelector:
+      type: dependent_services
+  
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+        - job_name: 'postgres_exporter'
+          static_configs:
+            - targets: ['observability-prometheus-postgres-exporter.student-api.svc.cluster.local']
+        - job_name: 'blackbox-https'
+          scrape_timeout: 15s
+          scrape_interval: 15s
+          metrics_path: /probe
+          params:
+            module: [http_2xx]
+          static_configs:
+          - targets:
+              - http://api-service.student-api.svc.cluster.local:5000/healthcheck
+          relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: observability-prometheus-blackbox-exporter:9115
+      nodeSelector:
+        type: dependent_services
+
+  alertmanager:
+    alertmanagerSpec:
+      alertmanagerConfigMatcherStrategy:
+        type: None
+      alertmanagerConfigSelector:
+        matchLabels:
+          release: '{{ .Release.Name }}'
+      nodeSelector:
+        type: dependent_services
+
+  prometheusOperator:
+    nodeSelector:
+      type: dependent_services
+
+
+  grafana:
+      enabled: true 
+      defaultDashboardsEnabled: false
+      nodeSelector:
+        type: dependent_services
+          
+      additionalDataSources: 
+        - name: Loki
+          type: loki
+          access: proxy
+          url:  http://{{ .Release.Name }}-loki:3100/
+          version: 1
+prometheus-postgres-exporter:
+  enabled: true
+  config:
+    datasource:
+      host: "db-service.student-api.svc.cluster.local"
+      userSecret:
+        name: "db-creds"
+        key: "POSTGRES_USER" 
+      passwordSecret:
+        name: "db-creds"
+        key: "POSTGRES_PASSWORD" 
+      database: "mydb"
+  namespaceOverride: student-api
+  nodeSelector:
+    type: dependent_services
+prometheus-blackbox-exporter:
+  enabled: true
+  nodeSelector:
+    type: dependent_services
+
+alertsconfig:
+  alertmanagerConfig:
+    receivers:
+      - name: slack-notifications
+        slackConfigs:
+          - apiURL:
+              key: url
+              name: slack
+            channel: '#bootcamp-alerts'
+            sendResolved: true
+            text: "{{ range .Alerts }}<!channel> {{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"
+            title: '{{ .CommonAnnotations.summary }}'
+    route:
+      receiver: slack-notifications
+  alerts:
+  - alert: HostHighCpuLoad
+    expr: 1 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > .80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host high CPU load (instance {{ $labels.instance }})
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: HostUnusualDiskIo
+    expr: rate(node_disk_io_time_seconds_total[5m]) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host unusual disk IO (instance {{ $labels.instance }})
+      description: "Disk usage >80%. Check storage for issues or increase IOPS capabilities. Check storage for issues.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+
+  - alert: NginxHighHttp4xxErrorRate
+      expr: sum(rate(nginx_http_requests_total{status=~"^4.."}[10m])) / sum(rate(nginx_http_requests_total[10m])) * 100 > 5
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Nginx high HTTP 4xx error rate (instance {{ $labels.instance }})
+        description: "Too many HTTP requests with status 4xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+  - alert: NginxHighHttp5xxErrorRate
+      expr: sum(rate(nginx_http_requests_total{status=~"^5.."}[10m])) / sum(rate(nginx_http_requests_total[10m])) * 100 > 5
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Nginx high HTTP 5xx error rate (instance {{ $labels.instance }})
+        description: "Too many HTTP requests with status 5xx (> 5%)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: HighP90Latency
+    expr: histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)) > 0.5
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High p90 latency"
+      description: "p90 latency exceeded 0.5s in the last 5 minutes"
+
+  - alert: HighP95Latency
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)) > 0.7
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High p95 latency"
+      description: "p95 latency exceeded 0.7s in the last 5 minutes"
+
+  - alert: NginxLatencyHigh
+    expr: histogram_quantile(0.99, sum(rate(nginx_http_request_duration_seconds_bucket[2m])) by (host, node, le)) > 3
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Nginx latency high (instance {{ $labels.instance }})
+      description: "Nginx p99 latency is higher than 3 seconds\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: DatabaseRestarted
+    expr: time() - kube_pod_start_time{pod=~"db.*"} < 600
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Database restarted"
+      description: "Detected a DB process restart in the last 10 minutes"
+
+  - alert: VaultRestarted
+    expr: time() - kube_pod_start_time{pod=~"vault.*"} < 600
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Vault restarted"
+      description: "HashiCorp Vault process restarted in the last 10 minutes"
+
+  - alert: ArgoCDServerRestarted
+    expr: time() - kube_pod_start_time{pod=~"argocd-server.*"} < 600
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "ArgoCD server restarted"
+      description: "ArgoCD server process restarted in the last 10 minutes"
+
